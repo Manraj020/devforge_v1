@@ -1,0 +1,12 @@
+$kind: http-request
+name: ""
+url: http://localhost:5000/api/projects/6adc885c3380cd4d1e62aed1
+method: PUT
+body:
+  type: json
+  content: "{\r
+
+    \    \"status\": \"In Progress\"\r
+
+    }"
+order: 1000

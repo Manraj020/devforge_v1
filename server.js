@@ -10,7 +10,9 @@ mongoose
   .connect(process.env.MONGO_URI)
   .then(() => {
     console.log("✅ MongoDB Connected Successfully");
-
+    app.get("/", (req, res) => {
+  res.send("DevForge API is running");
+});
     app.listen(5000, () => {
       console.log("🚀 Server running on http://localhost:5000");
     });
