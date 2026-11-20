@@ -69,7 +69,7 @@ export function SaveBar({ dirty, onSave, onCancel }) {
   );
 }
 
-export function ConfirmDialog({ title, description, confirmationText, value, onChange, onCancel, onConfirm, busy }) {
+export function ConfirmDialog({ title, description, confirmationText, value, onChange, onCancel, onConfirm, busy, confirmLabel = "Confirm" }) {
   return (
     <div className="settings-modal-backdrop" role="presentation" onMouseDown={(event) => event.target === event.currentTarget && !busy && onCancel()}>
       <section className="settings-modal" role="alertdialog" aria-modal="true" aria-labelledby="confirm-title">
@@ -85,7 +85,7 @@ export function ConfirmDialog({ title, description, confirmationText, value, onC
         <div className="settings-modal-actions">
           <button className="button button-secondary" type="button" onClick={onCancel} disabled={busy}>Cancel</button>
           <button className="button button-danger" type="button" onClick={onConfirm} disabled={busy || (confirmationText && value !== confirmationText)}>
-            {busy ? "Working..." : "Confirm"}
+            {busy ? "Working..." : confirmLabel}
           </button>
         </div>
       </section>

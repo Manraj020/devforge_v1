@@ -9,7 +9,7 @@ import ProjectTypeStep from "../components/project-builder/ProjectTypeStep";
 import StepIndicator from "../components/project-builder/StepIndicator";
 import TechnologyStep from "../components/project-builder/TechnologyStep";
 import { analyzeProject } from "../services/projectAnalysis";
-import { getErrorMessage, projectApi } from "../services/api";
+import { getErrorMessage, projectApi, taskApi } from "../services/api";
 
 const DRAFT_KEY = "devforge-project-wizard-draft";
 const initialForm = {
@@ -125,6 +125,7 @@ export default function CreateProject() {
 
     setCreating(true);
     try {
+      const selectedFeatures = [...new Set([...form.features, ...form.customFeatures])];
       const { data } = await projectApi.create({
         name: form.name.trim(),
         description: form.idea.trim(),
@@ -132,12 +133,27 @@ export default function CreateProject() {
         frontend: form.frontend ? [form.frontend] : [],
         backend: form.backend ? [form.backend] : [],
         database: form.database ? [form.database] : [],
-        features: [...new Set([...form.features, ...form.customFeatures])],
+        features: selectedFeatures,
       });
+
+      const taskResults = await Promise.allSettled(
+        selectedFeatures.map((feature) => taskApi.create({
+          title: feature,
+          category: "Features",
+          completed: false,
+          projectId: data.project._id,
+        })),
+      );
+      const failedTaskCount = taskResults.filter((result) => result.status === "rejected").length;
       localStorage.removeItem(DRAFT_KEY);
       navigate(`/projects/${data.project._id}`, {
         replace: true,
-        state: { message: "Project created successfully." },
+        state: {
+          message: "Project created successfully.",
+          warning: failedTaskCount
+            ? `Project created, but ${failedTaskCount} feature task${failedTaskCount === 1 ? "" : "s"} could not be created.`
+            : "",
+        },
       });
     } catch (requestError) {
       setError(getErrorMessage(requestError, "Could not create this project."));

@@ -98,6 +98,10 @@ h2 { margin-bottom: 0; font-size: 1.2rem; letter-spacing: -0.035em; }
 .project-card-footer { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-top: 17px; padding-top: 13px; border-top: 1px solid #252a35; }
 .muted-text { color: #777f8f; font-size: .69rem; }
 .card-actions { display: flex; align-items: center; gap: 7px; }
+.project-card-delete { display: inline-flex; min-height: 30px; align-items: center; gap: 4px; padding: 0 7px; border: 1px solid transparent; border-radius: 6px; background: transparent; color: #ad7980; cursor: pointer; font-size: .69rem; font-weight: 600; white-space: nowrap; }
+.project-card-delete > span:first-child { font-size: 1rem; line-height: 1; }
+.project-card-delete:hover { border-color: #54363c; background: #251a20; color: #f18b92; }
+.project-card-delete:focus-visible { outline: 2px solid #aa7379; outline-offset: 2px; }
 .icon-button { display: grid; width: 27px; height: 27px; place-items: center; border: 1px solid transparent; border-radius: 6px; background: transparent; cursor: pointer; font-size: 1.2rem; line-height: 1; }
 .icon-button:hover { border-color: #3b3038; background: #251a20; }
 .danger-icon { color: #ad7980; }
@@ -259,6 +263,8 @@ select:focus, .field input:focus, .field textarea:focus { border-color: #6e5de1;
   .stat-card > strong { margin-top: 9px; font-size: 1.4rem; }
   .project-grid, .project-grid-wide { grid-template-columns: 1fr; }
   .project-card { min-height: 250px; }
+  .project-card-footer { align-items: flex-start; flex-direction: column; }
+  .card-actions { width: 100%; justify-content: space-between; }
   .section-heading { align-items: flex-start; }
   .builder-banner { align-items: flex-start; flex-wrap: wrap; gap: 12px; padding: 16px; }
   .builder-banner > div:nth-child(2) { width: calc(100% - 58px); }
@@ -631,6 +637,8 @@ html[data-theme="light"] .settings-danger-card .setting-row { border-color: #f1d
 html[data-theme="light"] .settings-danger-card .settings-card-heading h3 { color: #a13b47; }
 html[data-theme="light"] .settings-modal { border-color: #e4c6ca; background: #fff; }
 html[data-theme="light"] .settings-modal > p, html[data-theme="light"] .settings-field, html[data-theme="light"] .settings-data-list > div > span, html[data-theme="light"] .system-status-row { color: #687386; }
+html[data-theme="light"] .project-card-delete { color: #a13b47; }
+html[data-theme="light"] .project-card-delete:hover { border-color: #edcbd0; background: #fff3f4; color: #8e2d38; }
 html[data-theme="light"] .settings-save-bar { border-color: #d7d0fa; background: #fff; color: #3f395f; box-shadow: 0 12px 36px #26304a20; }
 
 @media (max-width: 1120px) {
@@ -666,4 +674,94 @@ html[data-theme="light"] .settings-save-bar { border-color: #d7d0fa; background:
   .settings-save-bar > div { width: 100%; }
   .settings-save-bar .button { flex: 1; }
   .settings-toast { top: 68px; right: 12px; }
+}
+
+.project-assets-panel { margin-top: 18px; padding: 21px; }
+.assets-section-heading { align-items: flex-start; }
+.assets-section-heading h2 { margin-bottom: 5px; }
+.assets-section-heading > div > p:last-child { margin: 0; color: #858d9b; font-size: .73rem; }
+.assets-section-heading > .button { flex: 0 0 auto; }
+.assets-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; }
+.asset-card { display: flex; min-width: 0; align-items: stretch; gap: 12px; padding: 11px; border: 1px solid #2a303c; border-radius: 9px; background: #131821; transition: border-color .16s ease, background .16s ease; }
+.asset-card:hover { border-color: #49445f; background: #171b25; }
+.asset-preview { display: grid; width: 76px; height: 76px; flex: 0 0 auto; overflow: hidden; place-items: center; border: 1px solid #303744; border-radius: 7px; background: #10141c; }
+.asset-preview img { width: 100%; height: 100%; object-fit: cover; }
+.asset-file-icon { display: grid; width: 38px; height: 43px; place-items: center; border: 1px solid #4d4772; border-radius: 6px; background: #211e33; color: #b6aaff; font: 700 .59rem "DM Sans", sans-serif; letter-spacing: .04em; }
+.asset-kind-pdf { border-color: #74434c; background: #2a1c22; color: #ed969b; }
+.asset-kind-xls { border-color: #315c4c; background: #18271f; color: #8bd1a9; }
+.asset-kind-doc { border-color: #354f72; background: #192334; color: #9dbdf0; }
+.asset-kind-vid, .asset-kind-aud { border-color: #644d7b; background: #241d2e; color: #c5a6ed; }
+.asset-card-content { display: flex; min-width: 0; flex: 1; flex-direction: column; align-items: flex-start; }
+.asset-name { width: 100%; overflow: hidden; color: #d7dbe3; font-size: .73rem; text-overflow: ellipsis; white-space: nowrap; }
+.asset-meta { display: flex; max-width: 100%; align-items: center; gap: 6px; margin-top: 6px; color: #858d9b; font-size: .6rem; }
+.asset-meta span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.asset-meta i { width: 3px; height: 3px; flex: 0 0 auto; border-radius: 50%; background: #707888; }
+.asset-upload-date { margin-top: 5px; color: #737c8b; font-size: .61rem; }
+.asset-open-link { display: inline-flex; align-items: center; gap: 5px; margin-top: auto; padding-top: 7px; color: #b2a7ff; font-size: .65rem; font-weight: 600; }
+.asset-open-link:hover { color: #d2caff; }
+.assets-empty-state { display: flex; min-height: 200px; flex-direction: column; align-items: center; justify-content: center; padding: 22px; border: 1px dashed #303644; border-radius: 9px; background: #10141c; text-align: center; }
+.assets-empty-icon { display: grid; width: 40px; height: 40px; margin-bottom: 11px; place-items: center; border: 1px solid #373252; border-radius: 11px; background: #1c1a2e; color: #b1a6ff; font-size: 1.15rem; }
+.assets-empty-state h3 { margin-bottom: 6px; font-size: .9rem; }
+.assets-empty-state p { max-width: 380px; margin-bottom: 13px; color: #858d9b; font-size: .7rem; line-height: 1.55; }
+.asset-upload-status { margin-bottom: 13px; padding: 11px 12px; border: 1px solid #37334f; border-radius: 8px; background: #191827; }
+.asset-upload-status-top { display: flex; justify-content: space-between; margin-bottom: 8px; color: #aaa3d3; font-size: .69rem; }
+.asset-upload-status-top strong { color: #ded8ff; }
+.asset-success { margin-bottom: 13px; }
+html[data-theme="light"] .project-assets-panel { border-color: #dfe3eb; background: #fff; }
+html[data-theme="light"] .asset-card, html[data-theme="light"] .assets-empty-state { border-color: #dfe3eb; background: #f8f9fb; }
+html[data-theme="light"] .asset-preview { border-color: #dfe3eb; background: #eef1f6; }
+html[data-theme="light"] .asset-name, html[data-theme="light"] .assets-empty-state h3 { color: #27303e; }
+html[data-theme="light"] .assets-section-heading > div > p:last-child, html[data-theme="light"] .asset-meta, html[data-theme="light"] .asset-upload-date, html[data-theme="light"] .assets-empty-state p { color: #687386; }
+
+@media (max-width: 1120px) {
+  .assets-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+@media (max-width: 620px) {
+  .project-assets-panel { padding: 15px; }
+  .assets-section-heading { flex-wrap: wrap; }
+  .assets-section-heading > .button { width: 100%; }
+  .assets-grid { grid-template-columns: 1fr; }
+  .asset-preview { width: 68px; height: 68px; }
+}
+
+.alert-warning { border-color: #65532d; background: #292316; color: #e6c982; }
+.project-plan-grid { display: grid; grid-template-columns: minmax(0, 1.15fr) minmax(250px, .85fr); align-items: stretch; gap: 17px; }
+.project-plan-grid .detail-panel { height: 100%; }
+.technology-summary-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; }
+.technology-summary-grid .roadmap-item { min-height: 108px; }
+.technology-summary-grid .roadmap-item h3 { margin-top: 0; }
+.feature-tag-list { min-height: 46px; align-content: flex-start; }
+.feature-tag { border-color: #423c69; background: #201d32; color: #c4bbff; }
+.feature-task-note { margin: 15px 0 0; padding-top: 12px; border-top: 1px solid #292e39; color: #818998; font-size: .68rem; line-height: 1.5; }
+.project-tasks-panel { margin-top: 17px; padding: 21px; }
+.project-tasks-heading { display: flex; align-items: flex-start; justify-content: space-between; gap: 18px; }
+.project-tasks-heading .section-heading { margin-bottom: 0; }
+.project-tasks-heading .section-heading > div > p:last-child { margin: 5px 0 0; color: #858d9b; font-size: .72rem; }
+.project-task-progress { flex: 0 0 auto; padding: 7px 10px; border: 1px solid #343948; border-radius: 7px; color: #aeb5c2; font-size: .68rem; white-space: nowrap; }
+.project-task-progress-bar { max-width: 420px; margin: 17px 0 18px; }
+.project-add-task-form { margin-bottom: 17px; }
+.project-task-category + .project-task-category { margin-top: 15px; }
+.project-task-category-heading { display: flex; align-items: center; justify-content: space-between; padding: 10px 0 8px; border-top: 1px solid #272d38; }
+.project-task-category-heading h3 { margin: 0; color: #bec4cf; font-size: .75rem; }
+.project-task-category-heading > span { color: #858d9b; font-size: .65rem; }
+.project-task-category .task-list { border-top: 1px solid #252b36; }
+.project-task-category .task-row:last-child { border-bottom: 0; }
+html[data-theme="light"] .alert-warning { border-color: #e3d3a9; background: #fcf7e9; color: #775c1c; }
+html[data-theme="light"] .project-task-progress { border-color: #dfe3eb; color: #5a6475; }
+html[data-theme="light"] .project-task-category-heading { border-color: #e7eaf0; }
+html[data-theme="light"] .project-task-category-heading h3 { color: #3e4858; }
+html[data-theme="light"] .project-task-category .task-list { border-color: #e7eaf0; }
+
+@media (max-width: 850px) {
+  .project-plan-grid { grid-template-columns: minmax(0, 1fr); }
+}
+@media (max-width: 620px) {
+  .technology-summary-grid { grid-template-columns: minmax(0, 1fr); }
+  .technology-summary-grid .roadmap-item { min-height: 82px; }
+  .project-tasks-panel { padding: 15px; }
+  .project-tasks-heading { flex-direction: column; gap: 10px; }
+  .project-task-progress-bar { max-width: none; }
+  .project-add-task-form { flex-wrap: wrap; }
+  .project-add-task-form .task-title-field { flex-basis: 100%; }
+  .project-task-progress { align-self: flex-start; }
 }

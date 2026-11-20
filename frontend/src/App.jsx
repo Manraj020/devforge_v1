@@ -11,7 +11,6 @@ import ProjectDetails from "./pages/ProjectDetails";
 import Projects from "./pages/Projects";
 import Settings from "./pages/Settings";
 import Signup from "./pages/Signup";
-import Tasks from "./pages/Tasks";
 
 export default function App() {
   useEffect(() => {
@@ -44,7 +43,7 @@ export default function App() {
           <Route path="/projects" element={<Projects />} />
           <Route path="/projects/new" element={<CreateProject />} />
           <Route path="/projects/:id" element={<ProjectDetails />} />
-          <Route path="/tasks" element={<Tasks />} />
+          <Route path="/tasks" element={<Navigate to="/projects" replace />} />
           <Route path="/settings" element={<Settings />} />
         </Route>
       </Route>

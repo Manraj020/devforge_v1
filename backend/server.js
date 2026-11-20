@@ -6,6 +6,7 @@ const authRoutes = require("./routes/authRoutes");
 const taskRoutes = require("./routes/taskRoutes");
 const cors = require("cors");
 const errorMiddleware = require("./middleware/errorMiddleware");
+const uploadRoutes = require("./routes/uploadRoutes");
 // The existing .env is in the project root, one folder above backend.
 require("dotenv").config({ path: path.resolve(__dirname, "../.env") });
 
@@ -17,7 +18,26 @@ app.use(cors());
 app.use("/api/projects", projectRoutes);
 app.use("/api/auth", authRoutes);
 app.use("/api/tasks", taskRoutes);
+app.use("/api/upload", uploadRoutes);
+
+const uploadsDirectory = path.resolve(__dirname, "uploads");
+const inlineFileExtensions = new Set([".png", ".jpg", ".jpeg", ".gif", ".webp"]);
+app.use(
+  "/uploads",
+  express.static(uploadsDirectory, {
+    dotfiles: "deny",
+    index: false,
+    setHeaders(response, filePath) {
+      response.setHeader("X-Content-Type-Options", "nosniff");
+      if (!inlineFileExtensions.has(path.extname(filePath).toLowerCase())) {
+        response.setHeader("Content-Disposition", "attachment");
+      }
+    },
+  })
+);
+
 app.use(errorMiddleware);
+
 
 app.get("/", (req, res) => {
   res.send("DevForge API is running");

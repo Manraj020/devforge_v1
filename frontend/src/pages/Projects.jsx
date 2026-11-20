@@ -2,7 +2,8 @@ import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import ProjectCard from "../components/ProjectCard";
 import { EmptyState, ErrorMessage, LoadingState } from "../components/Feedback";
-import { getErrorMessage, projectApi } from "../services/api";
+import { ConfirmDialog } from "../components/settings/SettingsControls";
+import { getErrorMessage, projectApi, taskApi } from "../services/api";
 
 export default function Projects() {
   const [projects, setProjects] = useState([]);
@@ -10,6 +11,8 @@ export default function Projects() {
   const [status, setStatus] = useState("All statuses");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [projectToDelete, setProjectToDelete] = useState(null);
+  const [deleting, setDeleting] = useState(false);
 
   async function loadProjects() {
     setLoading(true);
@@ -34,14 +37,28 @@ export default function Projects() {
     });
   }, [projects, search, status]);
 
-  async function deleteProject(project) {
-    if (!window.confirm(`Delete "${project.name}"? This action cannot be undone.`)) return;
+  async function deleteProject() {
+    if (!projectToDelete || deleting) return;
     setError("");
+    setDeleting(true);
     try {
-      await projectApi.remove(project._id);
-      setProjects((current) => current.filter((item) => item._id !== project._id));
+      const { data } = await taskApi.listForProject(projectToDelete._id);
+      const taskResults = await Promise.allSettled(
+        (data.tasks || []).map((task) => taskApi.remove(task._id)),
+      );
+      const failedTaskDeletions = taskResults.filter((result) => result.status === "rejected").length;
+      if (failedTaskDeletions) {
+        setError(`Could not delete ${failedTaskDeletions} associated task${failedTaskDeletions === 1 ? "" : "s"}. The project was not deleted.`);
+        return;
+      }
+
+      await projectApi.remove(projectToDelete._id);
+      setProjects((current) => current.filter((item) => item._id !== projectToDelete._id));
+      setProjectToDelete(null);
     } catch (requestError) {
       setError(getErrorMessage(requestError, "Could not delete this project."));
+    } finally {
+      setDeleting(false);
     }
   }
 
@@ -73,8 +90,18 @@ export default function Projects() {
         />
       ) : (
         <div className="project-grid project-grid-wide">
-          {filteredProjects.map((project) => <ProjectCard key={project._id} project={project} onDelete={deleteProject} />)}
+          {filteredProjects.map((project) => <ProjectCard key={project._id} project={project} onDelete={setProjectToDelete} />)}
         </div>
+      )}
+      {projectToDelete && (
+        <ConfirmDialog
+          title="Delete project?"
+          description="This will permanently delete this project and its associated tasks."
+          onCancel={() => setProjectToDelete(null)}
+          onConfirm={deleteProject}
+          busy={deleting}
+          confirmLabel="Delete project"
+        />
       )}
     </>
   );

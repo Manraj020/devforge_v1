@@ -2,10 +2,9 @@ import { useCallback, useEffect, useState } from "react";
 import { Link, useLocation, useParams } from "react-router-dom";
 import ProgressBar from "../components/ProgressBar";
 import TaskItem from "../components/TaskItem";
+import ProjectAssets from "../components/ProjectAssets";
 import { EmptyState, ErrorMessage, LoadingState } from "../components/Feedback";
 import { getErrorMessage, projectApi, taskApi } from "../services/api";
-
-const categories = ["Frontend", "Backend", "Database", "Features"];
 
 export default function ProjectDetails() {
   const { id } = useParams();
@@ -14,10 +13,8 @@ export default function ProjectDetails() {
   const [tasks, setTasks] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
-  const [taskTitle, setTaskTitle] = useState("");
-  const [taskCategory, setTaskCategory] = useState("Frontend");
-  const [savingTask, setSavingTask] = useState(false);
   const [notice, setNotice] = useState(location.state?.message || "");
+  const [warning, setWarning] = useState(location.state?.warning || "");
 
   const loadDetails = useCallback(async () => {
     setLoading(true);
@@ -43,25 +40,6 @@ export default function ProjectDetails() {
     setProject(data.project);
   }
 
-  async function addTask(event) {
-    event.preventDefault();
-    if (!taskTitle.trim()) return;
-    setSavingTask(true);
-    setError("");
-    setNotice("");
-    try {
-      const { data } = await taskApi.create({ title: taskTitle.trim(), category: taskCategory, projectId: id });
-      setTasks((current) => [...current, data.task]);
-      setTaskTitle("");
-      await refreshProject();
-      setNotice("Task added.");
-    } catch (requestError) {
-      setError(getErrorMessage(requestError, "Could not add this task."));
-    } finally {
-      setSavingTask(false);
-    }
-  }
-
   async function toggleTask(task, completed) {
     setError("");
     try {
@@ -73,36 +51,26 @@ export default function ProjectDetails() {
     }
   }
 
-  async function deleteTask(task) {
-    if (!window.confirm(`Delete task "${task.title}"?`)) return;
-    setError("");
-    try {
-      await taskApi.remove(task._id);
-      setTasks((current) => current.filter((item) => item._id !== task._id));
-      await refreshProject();
-      setNotice("Task deleted.");
-    } catch (requestError) {
-      setError(getErrorMessage(requestError, "Could not delete this task."));
-    }
-  }
-
   if (loading) return <LoadingState label="Loading project..." />;
   if (error && !project) return <><ErrorMessage>{error}</ErrorMessage><Link className="button button-secondary" to="/projects">Back to projects</Link></>;
   if (!project) return <EmptyState title="Project not found." action={<Link className="button button-secondary" to="/projects">Back to projects</Link>} />;
 
-  const progress = Number(project.progress) || 0;
+  const progress = tasks.length
+    ? Math.round((tasks.filter((task) => task.completed).length / tasks.length) * 100)
+    : 0;
   const completedTaskCount = tasks.filter((task) => task.completed).length;
-  const roadmap = [
+  const technologies = [
     { title: "Frontend", items: project.frontend || [] },
     { title: "Backend", items: project.backend || [] },
     { title: "Database", items: project.database || [] },
-    { title: "Features", items: project.features || [] },
   ];
+  const taskCategories = ["Features", "Frontend", "Backend", "Database"];
 
   return (
     <>
       <div className="breadcrumb"><Link to="/projects">My Projects</Link><span>/</span><span>{project.name}</span></div>
       {notice && <div className="alert alert-success" role="status">{notice}</div>}
+      {warning && <div className="alert alert-warning" role="status">{warning}</div>}
       <ErrorMessage>{error}</ErrorMessage>
       <section className="project-detail-header">
         <div className="project-detail-title">
@@ -115,25 +83,24 @@ export default function ProjectDetails() {
         </div>
         <div className="detail-progress">
           <div className="progress-label">
-            <span>Overall task completion</span>
+            <span>Project completion</span>
             <strong>{progress}%</strong>
           </div>
           <ProgressBar value={progress} />
           <p className="muted-text progress-task-count">
-            {completedTaskCount} of {tasks.length} tasks completed across all categories
+            {completedTaskCount} of {tasks.length} tasks completed
           </p>
         </div>
       </section>
 
-      <div className="detail-columns">
-        <section className="panel detail-panel">
+      <div className="project-plan-grid">
+        <section className="panel detail-panel technology-panel">
           <div className="section-heading section-heading-tight">
-            <div><p className="eyebrow">PROJECT PLAN</p><h2>Roadmap</h2></div>
+            <div><p className="eyebrow">PROJECT PLAN</p><h2>Technology &amp; Architecture</h2></div>
           </div>
-          <div className="roadmap-grid">
-            {roadmap.map((section, index) => (
+          <div className="technology-summary-grid">
+            {technologies.map((section) => (
               <article className="roadmap-item" key={section.title}>
-                <span className="roadmap-number">0{index + 1}</span>
                 <h3>{section.title}</h3>
                 {section.items.length ? (
                   <div className="tag-list">{section.items.map((item, itemIndex) => <span className="tech-tag" key={`${item}-${itemIndex}`}>{item}</span>)}</div>
@@ -143,32 +110,78 @@ export default function ProjectDetails() {
           </div>
         </section>
 
-        <section className="panel detail-panel tasks-panel">
+        <section className="panel detail-panel feature-panel">
           <div className="section-heading section-heading-tight">
-            <div><p className="eyebrow">BUILD IN STEPS</p><h2>Tasks <span className="count-badge">{tasks.length}</span></h2></div>
-          </div>
-          <form className="add-task-form" onSubmit={addTask}>
-            <label className="field task-title-field">
-              <span className="visually-hidden">Task title</span>
-              <input value={taskTitle} onChange={(event) => setTaskTitle(event.target.value)} placeholder="Add a task..." maxLength="200" required />
-            </label>
-            <label className="field task-category-field">
-              <span className="visually-hidden">Task category</span>
-              <select value={taskCategory} onChange={(event) => setTaskCategory(event.target.value)}>
-                {categories.map((category) => <option key={category}>{category}</option>)}
-              </select>
-            </label>
-            <button className="button button-primary button-small" type="submit" disabled={savingTask}>{savingTask ? "Adding..." : "Add task"}</button>
-          </form>
-          {tasks.length === 0 ? (
-            <EmptyState title="No tasks yet." description="Add your first task to begin tracking project progress." />
-          ) : (
-            <div className="task-list">
-              {tasks.map((task) => <TaskItem key={task._id} task={task} onToggle={toggleTask} onDelete={deleteTask} />)}
+            <div>
+              <p className="eyebrow">PROJECT SCOPE</p>
+              <h2>Project Features <span className="count-badge">{(project.features || []).length}</span></h2>
             </div>
+          </div>
+          {(project.features || []).length ? (
+            <div className="tag-list feature-tag-list">
+              {project.features.map((feature, index) => (
+                <span className="tech-tag feature-tag" key={`${feature}-${index}`}>{feature}</span>
+              ))}
+            </div>
+          ) : (
+            <p className="muted-text roadmap-empty">No features were selected for this project.</p>
           )}
+          <p className="feature-task-note">Selected features are added as project tasks when a project is created.</p>
         </section>
       </div>
+
+      <section className="panel project-tasks-panel">
+        <div className="project-tasks-heading">
+          <div className="section-heading section-heading-tight">
+            <div>
+              <p className="eyebrow">PROJECT WORK</p>
+              <h2>Tasks <span className="count-badge">{tasks.length}</span></h2>
+              <p>Complete the features you selected for this project.</p>
+            </div>
+          </div>
+          <span className="project-task-progress">{completedTaskCount} / {tasks.length} completed</span>
+        </div>
+        <div className="project-task-progress-bar">
+          <div className="progress-label"><span>Project completion</span><strong>{progress}%</strong></div>
+          <ProgressBar value={progress} />
+        </div>
+        {tasks.length === 0 ? (
+          <EmptyState
+            title="No feature tasks yet"
+            description="Feature tasks are created automatically from the features selected when you create a project."
+          />
+        ) : (
+          <div className="project-task-category-list">
+            {taskCategories.map((category) => {
+              const categoryTasks = tasks.filter((task) => task.category === category);
+              if (!categoryTasks.length) return null;
+              return (
+                <section className="project-task-category" key={category}>
+                  <div className="project-task-category-heading">
+                    <h3>{category}</h3>
+                    <span>{categoryTasks.filter((task) => task.completed).length}/{categoryTasks.length}</span>
+                  </div>
+                  <div className="task-list">
+                    {categoryTasks.map((task) => <TaskItem key={task._id} task={task} onToggle={toggleTask} />)}
+                  </div>
+                </section>
+              );
+            })}
+          </div>
+        )}
+      </section>
+
+      <ProjectAssets
+        projectId={id}
+        assets={project.assets || []}
+        onUploaded={(asset) => {
+          setProject((current) => ({
+            ...current,
+            assets: [...(current.assets || []), asset],
+          }));
+          setNotice("Project asset uploaded successfully.");
+        }}
+      />
     </>
   );
 }

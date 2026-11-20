@@ -40,13 +40,14 @@ export default function ProjectCard({ project, onDelete }) {
           </Link>
           {onDelete && (
             <button
-              className="icon-button danger-icon"
+              className="project-card-delete"
               type="button"
               onClick={() => onDelete(project)}
-              aria-label={`Delete ${project.name}`}
+              aria-label={`Delete project ${project.name}`}
               title="Delete project"
             >
-              ×
+              <span aria-hidden="true">×</span>
+              <span>Delete</span>
             </button>
           )}
         </div>

@@ -4,7 +4,6 @@ const navigation = [
   { to: "/", label: "Dashboard", icon: "⌂", end: true },
   { to: "/projects", label: "My Projects", icon: "▦" },
   { to: "/projects/new", label: "Create Project", icon: "+" },
-  { to: "/tasks", label: "Tasks", icon: "✓" },
   { to: "/settings", label: "Settings", icon: "⚙" },
 ];
 

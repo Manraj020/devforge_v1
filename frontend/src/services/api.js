@@ -35,6 +35,25 @@ export const taskApi = {
   remove: (id) => api.delete(`/tasks/${id}`),
 };
 
+export const assetApi = {
+  upload: (projectId, file, onUploadProgress) => {
+    const formData = new FormData();
+    formData.append("projectId", projectId);
+    formData.append("file", file);
+
+    return api.post("/upload", formData, {
+      headers: { "Content-Type": "multipart/form-data" },
+      onUploadProgress,
+    });
+  },
+};
+
+export function getAssetUrl(assetPath) {
+  const apiBase = api.defaults.baseURL.replace(/\/api\/?$/, "");
+  const normalizedPath = String(assetPath || "").replaceAll("\\", "/");
+  return `${apiBase}${normalizedPath.startsWith("/") ? "" : "/"}${normalizedPath}`;
+}
+
 export const systemApi = {
   checkBackend: () => api.get("/", {
     baseURL: `${api.defaults.baseURL.replace(/\/api\/?$/, "")}/`,
